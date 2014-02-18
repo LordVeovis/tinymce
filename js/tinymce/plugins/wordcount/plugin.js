@@ -52,7 +52,7 @@ tinymce.PluginManager.add('wordcount', function(editor) {
 
 		if (tx) {
 			tx = tx.replace(/\.\.\./g, ' '); // convert ellipses to spaces
-			tx = tx.replace(/<.[^<>]*?>/g, ' ').replace(/&nbsp;|&#160;/gi, ' '); // remove html tags and space chars
+			tx = tx.replace(/<.[^<>]*?>/g, ' ').replace(/&#xa0;|&#160;/gi, ' '); // remove html tags and space chars
 
 			// deal with html entities
 			tx = tx.replace(/(\w+)(&#?[a-z0-9]+;)+(\w+)/i, "$1$3").replace(/&.+?;/g, ' ');

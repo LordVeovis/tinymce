@@ -16,7 +16,7 @@ tinymce.PluginManager.add('nonbreaking', function(editor) {
 	editor.addCommand('mceNonBreaking', function() {
 		editor.insertContent(
 			(editor.plugins.visualchars && editor.plugins.visualchars.state) ?
-			'<span class="mce-nbsp">&nbsp;</span>' : '&nbsp;'
+			'<span class="mce-nbsp">&#xa0;</span>' : '&#xa0;'
 		);
 
 		editor.dom.setAttrib(editor.dom.select('span.mce-nbsp'), 'data-mce-bogus', '1');

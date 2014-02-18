@@ -225,9 +225,9 @@ tinymce.PluginManager.add('charmap', function(editor) {
 		['969', 'omega'],
 	// symbols
 		['8501', 'alef symbol'],
-		['982', 'pi symbol'],
+		['982',  'pi symbol'],
 		['8476', 'real part symbol'],
-		['978', 'upsilon - hook symbol'],
+		['978',  'upsilon - hook symbol'],
 		['8472', 'Weierstrass p'],
 		['8465', 'imaginary part'],
 	// arrows
@@ -298,10 +298,10 @@ tinymce.PluginManager.add('charmap', function(editor) {
 					var chr = charmap[index];
 
 					gridHtml += '<td title="' + chr[1] + '"><div tabindex="-1" title="' + chr[1] + '" role="button">' +
-						(chr ? String.fromCharCode(parseInt(chr[0], 10)) : '&nbsp;') + '</div></td>';
+					(chr ? String.fromCharCode(parseInt(chr[0], 10)) : '&#xa0;') + '</div></td>';
 				} else {
 					gridHtml += '<td />';
-				}
+			}
 			}
 
 			gridHtml += '</tr>';
@@ -319,8 +319,8 @@ tinymce.PluginManager.add('charmap', function(editor) {
 						editor.execCommand('mceInsertContent', false, tinymce.trim(target.innerText || target.textContent));
 
 						if (!e.ctrlKey) {
-							win.close();
-						}
+					win.close();
+				}
 					}
 				}
 			},
@@ -353,13 +353,13 @@ tinymce.PluginManager.add('charmap', function(editor) {
 					minHeight: 160,
 					items: [
 						{
-							type: 'label',
-							name: 'preview',
-							text: ' ',
-							style: 'font-size: 40px; text-align: center',
-							border: 1,
+					type: 'label',
+					name: 'preview',
+					text: ' ',
+					style: 'font-size: 40px; text-align: center',
+					border: 1,
 							minWidth: 140,
-							minHeight: 80
+					minHeight: 80
 						},
 						{
 							type: 'label',
@@ -369,7 +369,7 @@ tinymce.PluginManager.add('charmap', function(editor) {
 							border: 1,
 							minWidth: 140,
 							minHeight: 80
-						}
+				}
 					]
 				}
 			],

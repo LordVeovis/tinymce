@@ -427,7 +427,7 @@ define("tinymce/EnterKey", [
 			// Inserts a BR element if the forced_root_block option is set to false or empty string
 			function insertBr() {
 				editor.execCommand("InsertLineBreak", false, evt);
-			}
+					}
 
 			// Trims any linebreaks at the beginning of node user for example when pressing enter in a PRE element
 			function trimLeadingLineBreaks(node) {
@@ -622,7 +622,7 @@ define("tinymce/EnterKey", [
 			dom.setAttrib(newBlock, 'id', ''); // Remove ID since it needs to be document unique
 
 			// Allow custom handling of new blocks
-			editor.fire('NewBlock', {newBlock: newBlock});
+			editor.fire('NewBlock', { newBlock: newBlock });
 
 			undoManager.add();
 		}
