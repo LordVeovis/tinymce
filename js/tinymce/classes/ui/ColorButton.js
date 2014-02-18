@@ -10,7 +10,7 @@
 
 /**
  * This class creates a color button control. This is a split button in which the main
- * button has a visual representation of the currently selected color. When clicked
+ * button has a visual representation of the currently selected color. When clicked 
  * the caret button displays a color picker, allowing the user to select a new color.
  *
  * @-x-less ColorButton.less
@@ -22,7 +22,7 @@ define("tinymce/ui/ColorButton", [
 	"tinymce/dom/DOMUtils"
 ], function(PanelButton, DomUtils) {
 	"use strict";
-
+	
 	var DOM = DomUtils.DOM;
 
 	return PanelButton.extend({
@@ -90,7 +90,7 @@ define("tinymce/ui/ColorButton", [
 				'</div>'
 			);
 		},
-
+		
 		/**
 		 * Called after the control has been rendered.
 		 *
