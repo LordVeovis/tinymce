@@ -16,8 +16,10 @@ tinymce.PluginManager.add('nonbreaking', function(editor) {
 	editor.addCommand('mceNonBreaking', function() {
 		editor.insertContent(
 			(editor.plugins.visualchars && editor.plugins.visualchars.state) ?
-			'<span data-mce-bogus="1" class="mce-nbsp">&#xa0;</span>' : '&#xa0;'
+			'<span class="mce-nbsp">\u00a0</span>' : '\u00a0'
 		);
+
+		editor.dom.setAttrib(editor.dom.select('span.mce-nbsp'), 'data-mce-bogus', '1');
 	});
 
 	editor.addButton('nonbreaking', {

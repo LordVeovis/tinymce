@@ -1,3 +1,4 @@
+(function() {
 function fontFace(face) {
 	if (tinymce.isOpera) {
 		return "'" + face + "'";
@@ -52,20 +53,6 @@ function setSelection(startSelector, startOffset, endSelector, endOffset) {
 	setRange(startContainer, startOffset, true);
 	setRange(endContainer, endOffset, false);
 	editor.selection.setRng(rng);
-}
-
-function initWhenTinyAndRobotAreReady(initTinyFunction) {
-	function loaded() {
-		QUnit.start();
-	}
-
-	tinymce.on('AddEditor', function(e) {
-		e.editor.on('Init', function() {
-			loaded();
-		});
-	});
-
-	window.robot.onload(initTinyFunction);
 }
 
 function trimContent(content) {
@@ -221,6 +208,10 @@ function cleanHtml(html) {
 	html = html.toLowerCase().replace(/[\r\n]+/gi, '');
 	html = html.replace(/ (sizcache[0-9]+|sizcache|nodeindex|sizset[0-9]+|sizset|data\-mce\-expando|data\-mce\-selected)="[^"]*"/gi, '');
 	html = html.replace(/<span[^>]+data-mce-bogus[^>]+>[\u200B\uFEFF]+<\/span>|<div[^>]+data-mce-bogus[^>]+><\/div>/gi, '');
+		html = html.replace(/ style="([^"]+)"/gi, function(val1, val2) {
+			val2 = val2.replace(/;$/, '');
+			return ' style="' + val2.replace(/\:([^ ])/g, ': $1') + ';"';
+		});
 
 	return html;
 }
@@ -297,3 +288,52 @@ function nearlyEqualRects(rect1, rect2, diff) {
 
 	ok(true);
 }
+
+	function getFontmostWindow() {
+		return editor.windowManager.windows[editor.windowManager.windows.length - 1];
+	}
+
+	function pressArrowKey(evt) {
+		var dom = editor.dom, target = editor.selection.getNode();
+
+		evt = tinymce.extend({keyCode: 37}, evt);
+
+		dom.fire(target, 'keydown', evt);
+		dom.fire(target, 'keypress', evt);
+		dom.fire(target, 'keyup', evt);
+	}
+
+	function pressEnter(evt) {
+		var dom = editor.dom, target = editor.selection.getNode();
+
+		evt = tinymce.extend({keyCode: 13}, evt);
+
+		dom.fire(target, 'keydown', evt);
+		dom.fire(target, 'keypress', evt);
+		dom.fire(target, 'keyup', evt);
+	}
+
+	function trimBrsOnIE(html) {
+		return html.replace(/<br[^>]*>/gi, '');
+	}
+
+	window.Utils = {
+		fontFace: fontFace,
+		findContainer: findContainer,
+		setSelection: setSelection,
+		trimContent: trimContent,
+		fakeKeyEvent: fakeKeyEvent,
+		normalizeRng: normalizeRng,
+		type: type,
+		cleanHtml: cleanHtml,
+		normalizeHtml: normalizeHtml,
+		rect: rect,
+		size: size,
+		resetScroll: resetScroll,
+		nearlyEqualRects: nearlyEqualRects,
+		getFontmostWindow: getFontmostWindow,
+		pressArrowKey: pressArrowKey,
+		pressEnter: pressEnter,
+		trimBrsOnIE: trimBrsOnIE
+	};
+})();

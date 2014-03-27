@@ -9,6 +9,7 @@
  */
 
 /*jshint loopfunc:true*/
+/*eslint no-loop-func:0 */
 
 define("tinymce/dom/EventUtils", [], function() {
 	"use strict";
@@ -146,7 +147,9 @@ define("tinymce/dom/EventUtils", [], function() {
 		}
 
 		function waitForDomLoaded() {
-			if (doc.readyState === "complete" || doc.readyState === "interactive") {
+			// Check complete or interactive state if there is a body
+			// element on some iframes IE 8 will produce a null body
+			if (doc.readyState === "complete" || (doc.readyState === "interactive" && doc.body)) {
 				removeEvent(doc, "readystatechange", waitForDomLoaded);
 				readyHandler();
 			}
@@ -398,10 +401,13 @@ define("tinymce/dom/EventUtils", [], function() {
 								while (ci--) {
 									if (callbackList[ci].func === callback) {
 										var nativeHandler = callbackList.nativeHandler;
+										var fakeName = callbackList.fakeName, capture = callbackList.capture;
 
 										// Clone callbackList since unbind inside a callback would otherwise break the handlers loop
 										callbackList = callbackList.slice(0, ci).concat(callbackList.slice(ci + 1));
 										callbackList.nativeHandler = nativeHandler;
+										callbackList.fakeName = fakeName;
+										callbackList.capture = capture;
 
 										eventMap[name] = callbackList;
 									}

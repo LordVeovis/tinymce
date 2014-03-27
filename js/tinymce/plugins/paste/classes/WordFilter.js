@@ -23,7 +23,10 @@ define("tinymce/pasteplugin/WordFilter", [
 	"tinymce/pasteplugin/Utils"
 ], function(Tools, DomParser, Schema, Serializer, Node, Utils) {
 	function isWordContent(content) {
-		return (/<font face="Times New Roman"|class="?Mso|style="[^"]*\bmso-|style='[^'']*\bmso-|w:WordDocument/i).test(content);
+		return (
+			(/<font face="Times New Roman"|class="?Mso|style="[^"]*\bmso-|style='[^'']*\bmso-|w:WordDocument/i).test(content) ||
+			(/class="OutlineElement/).test(content)
+		);
 	}
 
 	function WordFilter(editor) {
@@ -144,7 +147,7 @@ define("tinymce/pasteplugin/WordFilter", [
 					}
 				}
 
-				if (editor.getParam("paste_retain_style_properties", "none")) {
+				if (retainStyleProperties) {
 					var outputStyle = "";
 
 					Tools.each(editor.dom.parseStyle(styleValue), function(value, name) {
@@ -167,6 +170,11 @@ define("tinymce/pasteplugin/WordFilter", [
 							case "mso-highlight":
 								name = "background";
 								break;
+						}
+
+						// Never allow mso- prefixed names
+						if (name.indexOf('mso-') === 0) {
+							return;
 						}
 
 						// Output only valid styles
@@ -211,7 +219,7 @@ define("tinymce/pasteplugin/WordFilter", [
 					[/<span\s+style\s*=\s*"\s*mso-spacerun\s*:\s*yes\s*;?\s*"\s*>([\s\u00a0]*)<\/span>/gi,
 						function(str, spaces) {
 							return (spaces.length > 0) ?
-								spaces.replace(/./, " ").slice(Math.floor(spaces.length/2)).split("").join("\u00a0") : "";
+								spaces.replace(/./, " ").slice(Math.floor(spaces.length / 2)).split("").join("\u00a0") : "";
 						}
 					]
 				]);
@@ -269,6 +277,7 @@ define("tinymce/pasteplugin/WordFilter", [
 						}
 					}
 				});
+
 				// Parse into DOM structure
 				var rootNode = domParser.parse(content);
 

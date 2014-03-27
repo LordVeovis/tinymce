@@ -309,15 +309,19 @@ define("tinymce/pasteplugin/Clipboard", [
 			var doc = editor.getDoc(), rng;
 
 			if (doc.caretPositionFromPoint) {
-				var point = doc.caretPositionFromPoint(e.pageX, e.pageY);
+				var point = doc.caretPositionFromPoint(e.clientX, e.clientY);
 				rng = doc.createRange();
 				rng.setStart(point.offsetNode, point.offset);
 				rng.collapse(true);
 			} else if (doc.caretRangeFromPoint) {
-				rng = doc.caretRangeFromPoint(e.pageX, e.pageY);
+				rng = doc.caretRangeFromPoint(e.clientX, e.clientY);
 			}
 
 			return rng;
+		}
+
+		function hasContentType(clipboardContent, mimeType) {
+			return mimeType in clipboardContent && clipboardContent[mimeType].length > 0;
 		}
 
 		function registerEventHandlers() {
@@ -390,6 +394,11 @@ define("tinymce/pasteplugin/Clipboard", [
 
 					removePasteBin();
 
+					// Always use pastebin HTML if it's available since it contains Word contents
+					if (!plainTextMode && isKeyBoardPaste && html && html != pasteBinDefaultContent) {
+						clipboardContent['text/html'] = html;
+					}
+
 					if (html == pasteBinDefaultContent || !isKeyBoardPaste) {
 						html = clipboardContent['text/html'] || clipboardContent['text/plain'] || pasteBinDefaultContent;
 
@@ -400,6 +409,11 @@ define("tinymce/pasteplugin/Clipboard", [
 
 							return;
 						}
+					}
+
+					// Force plain text mode if we only got a text/plain content type
+					if (!hasContentType(clipboardContent, 'text/html') && hasContentType(clipboardContent, 'text/plain')) {
+						plainTextMode = true;
 					}
 
 					if (plainTextMode) {

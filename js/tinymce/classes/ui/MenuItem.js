@@ -76,25 +76,7 @@ define("tinymce/ui/MenuItem", [
 				e.preventDefault();
 			});
 
-			self.on('mouseenter click', function(e) {
-				if (e.control === self) {
-					if (!settings.menu && e.type === 'click') {
-						self.parent().hideAll();
-						self.fire('cancel');
-						self.fire('select');
-					} else {
-						self.showMenu();
-
-						if (e.aria) {
-							setTimeout(function() {
-								self.menu.focus(true);
-							}, 0);
-						}
-					}
-				}
-			});
-
-			if (settings.menu) {
+			if (settings.menu && !settings.ariaHideMenu) {
 				self.aria('haspopup', true);
 			}
 		},
@@ -143,13 +125,13 @@ define("tinymce/ui/MenuItem", [
 						menu.itemDefaults = parent.settings.itemDefaults;
 					}
 
-					menu = self.menu = Factory.create(menu).parent(self).renderTo(self.getContainerElm());
+					menu = self.menu = Factory.create(menu).parent(self).renderTo();
 					menu.reflow();
 					menu.fire('show');
 					menu.on('cancel', function(e) {
 						e.stopPropagation();
-						menu.hide();
 						self.focus();
+						menu.hide();
 					});
 
 					menu.on('hide', function(e) {
@@ -238,7 +220,7 @@ define("tinymce/ui/MenuItem", [
 
 			return (
 				'<div id="' + id + '" class="' + self.classes() + '" tabindex="-1">' +
-					(text !== '-' ? '<i class="' + icon + '"' + image + '></i>&#xa0;' : '') +
+					(text !== '-' ? '<i class="' + icon + '"' + image + '></i>\u00a0' : '') +
 					(text !== '-' ? '<span id="' + id + '-text" class="' + prefix + 'text">' + text + '</span>' : '') +
 					(shortcut ? '<div id="' + id + '-shortcut" class="' + prefix + 'menu-shortcut">' + shortcut + '</div>' : '') +
 					(settings.menu ? '<div class="' + prefix + 'caret"></div>' : '') +
@@ -266,7 +248,24 @@ define("tinymce/ui/MenuItem", [
 				}
 			}
 
-			return self._super();
+			self.on('mouseenter click', function(e) {
+				if (e.control === self) {
+					if (!settings.menu && e.type === 'click') {
+						self.fire('select');
+						self.parent().hideAll();
+					} else {
+						self.showMenu();
+
+						if (e.aria) {
+							self.menu.focus(true);
+						}
+					}
+				}
+			});
+
+			self._super();
+
+			return self;
 		},
 
 		active: function(state) {

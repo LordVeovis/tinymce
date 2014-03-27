@@ -83,24 +83,29 @@ define("tinymce/ui/MenuButton", [
 					menu.type = menu.type || 'menu';
 				}
 
-				self.menu = Factory.create(menu).parent(self).renderTo(self.getContainerElm());
+				self.menu = Factory.create(menu).parent(self).renderTo();
 				self.fire('createmenu');
 				self.menu.reflow();
 				self.menu.on('cancel', function(e) {
 					if (e.control.parent() === self.menu) {
 						e.stopPropagation();
-						self.menu.hide();
 						self.focus();
+						self.hideMenu();
 					}
+				});
+
+				// Move focus to button when a menu item is selected/clicked
+				self.menu.on('select', function() {
+					self.focus();
 				});
 
 				self.menu.on('show hide', function(e) {
 					if (e.control == self.menu) {
 						self.activeMenu(e.type == 'show');
 					}
-				}).fire('show');
 
-				self.aria('expanded', true);
+					self.aria('expanded', e.type == 'show');
+				}).fire('show');
 			}
 
 			self.menu.show();
@@ -124,7 +129,6 @@ define("tinymce/ui/MenuButton", [
 				});
 
 				self.menu.hide();
-				self.aria('expanded', false);
 			}
 		},
 
@@ -150,7 +154,7 @@ define("tinymce/ui/MenuButton", [
 			self.aria('role', self.parent() instanceof MenuBar ? 'menuitem' : 'button');
 
 			return (
-				'<div id="' + id + '" class="' + self.classes() + '" tabindex="-1">' +
+				'<div id="' + id + '" class="' + self.classes() + '" tabindex="-1" aria-labelledby="' + id + '">' +
 					'<button id="' + id + '-open" role="presentation" type="button" tabindex="-1">' +
 						(icon ? '<i class="' + icon + '"></i>' : '') +
 						'<span>' + (self._text ? (icon ? '\u00a0' : '') + self.encode(self._text) : '') + '</span>' +

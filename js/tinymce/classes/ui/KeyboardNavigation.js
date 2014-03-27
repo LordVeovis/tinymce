@@ -26,6 +26,9 @@ define("tinymce/ui/KeyboardNavigation", [
 	return function(settings) {
 		var root = settings.root, focusedElement, focusedControl;
 
+		focusedElement = document.activeElement;
+		focusedControl = root.getParentCtrl(focusedElement);
+
 		/**
 		 * Returns the currently focused elements wai aria role of the currently
 		 * focused element or specified element.
@@ -81,9 +84,11 @@ define("tinymce/ui/KeyboardNavigation", [
 		 * @return {Boolean} True/false if the element is a text element or not.
 		 */
 		function isTextInputElement(elm) {
+			var tagName = elm.tagName.toUpperCase();
+
 			// Notice: since type can be "email" etc we don't check the type
 			// So all input elements gets treated as text input elements
-			return elm.tagName == "INPUT" || elm.tagName == "TEXTAREA";
+			return tagName == "INPUT" || tagName == "TEXTAREA";
 		}
 
 		/**
@@ -94,7 +99,7 @@ define("tinymce/ui/KeyboardNavigation", [
 		 * @return {Boolean} True/false if the element can have focus.
 		 */
 		function canFocus(elm) {
-			if (elm.tagName == "INPUT" && !elm.hidden) {
+			if (isTextInputElement(elm) && !elm.hidden) {
 				return true;
 			}
 
@@ -294,7 +299,11 @@ define("tinymce/ui/KeyboardNavigation", [
 			var parentRole = getParentRole();
 
 			if (parentRole == "tablist") {
-				getFocusElements(focusedControl.getEl('body'))[0].focus();
+				var elm = getFocusElements(focusedControl.getEl('body'))[0];
+
+				if (elm) {
+					elm.focus();
+				}
 			} else {
 				moveFocus(e.shiftKey ? -1 : 1);
 			}
@@ -321,9 +330,9 @@ define("tinymce/ui/KeyboardNavigation", [
 		}
 
 		root.on('keydown', function(e) {
-			function handleEvent(e, handler, isArrowKey) {
-				// Ignore arrow keys for text input elements
-				if (isArrowKey && isTextInputElement(focusedElement)) {
+			function handleNonTabOrEscEvent(e, handler) {
+				// Ignore non tab keys for text elements
+				if (isTextInputElement(focusedElement)) {
 					return;
 				}
 
@@ -338,33 +347,35 @@ define("tinymce/ui/KeyboardNavigation", [
 
 			switch (e.keyCode) {
 				case 37: // DOM_VK_LEFT
-					handleEvent(e, left, true);
+					handleNonTabOrEscEvent(e, left);
 					break;
 
 				case 39: // DOM_VK_RIGHT
-					handleEvent(e, right, true);
+					handleNonTabOrEscEvent(e, right);
 					break;
 
 				case 38: // DOM_VK_UP
-					handleEvent(e, up, true);
+					handleNonTabOrEscEvent(e, up);
 					break;
 
 				case 40: // DOM_VK_DOWN
-					handleEvent(e, down, true);
-					break;
-
-				case 9: // DOM_VK_TAB
-					handleEvent(e, tab);
+					handleNonTabOrEscEvent(e, down);
 					break;
 
 				case 27: // DOM_VK_ESCAPE
-					handleEvent(e, cancel);
+					cancel();
 					break;
 
 				case 14: // DOM_VK_ENTER
 				case 13: // DOM_VK_RETURN
 				case 32: // DOM_VK_SPACE
-					handleEvent(e, enter);
+					handleNonTabOrEscEvent(e, enter);
+					break;
+
+				case 9: // DOM_VK_TAB
+					if (tab(e) !== false) {
+						e.preventDefault();
+					}
 					break;
 			}
 		});

@@ -44,7 +44,7 @@ define("tinymce/pasteplugin/Quirks", [
 			html = Utils.filter(html, [
 				/^[\s\S]*<!--StartFragment-->|<!--EndFragment-->[\s\S]*$/g, // WebKit fragment
 				[/<span class="Apple-converted-space">\u00a0<\/span>/g, '\u00a0'], // WebKit &nbsp;
-				/<br>$/ // Traling BR elements
+				/<br>$/i // Traling BR elements
 			]);
 
 			return html;
@@ -103,8 +103,13 @@ define("tinymce/pasteplugin/Quirks", [
 		 * @return {String} Processed contents.
 		 */
 		function removeWebKitStyles(content) {
+			// Passthrough all styles from Word and let the WordFilter handle that junk
+			if (WordFilter.isWordContent(content)) {
+				return content;
+			}
+
 			if (editor.settings.paste_remove_styles || editor.settings.paste_remove_styles_if_webkit !== false) {
-				content = content.replace(/ style=\"[^\"]+\"/g, '');
+				content = content.replace(/ style=\"[^\"]+\"/gi, '');
 			}
 
 			return content;
