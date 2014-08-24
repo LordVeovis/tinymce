@@ -318,8 +318,8 @@ tinymce.PluginManager.add('charmap', function(editor) {
 					editor.execCommand('mceInsertContent', false, target.firstChild.data);
 
 					if (!e.ctrlKey) {
-					win.close();
-				}
+						win.close();
+					}
 				}
 			},
 			onmouseover: function(e) {
