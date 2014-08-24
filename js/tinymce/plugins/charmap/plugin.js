@@ -297,7 +297,7 @@ tinymce.PluginManager.add('charmap', function(editor) {
 				if (index < charmap.length) {
 					var chr = charmap[index];
 
-					gridHtml += '<td title="' + chr[1] + '"><div tabindex="-1" title="' + chr[1] + '" role="button">' +
+				gridHtml += '<td title="' + chr[1] + '"><div tabindex="-1" title="' + chr[1] + '" role="button">' +
 					(chr ? String.fromCharCode(parseInt(chr[0], 10)) : '&#xa0;') + '</div></td>';
 				} else {
 					gridHtml += '<td />';
@@ -318,10 +318,10 @@ tinymce.PluginManager.add('charmap', function(editor) {
 					if (getParentTd(target).firstChild) {
 						editor.execCommand('mceInsertContent', false, tinymce.trim(target.innerText || target.textContent));
 
-						if (!e.ctrlKey) {
-					win.close();
-				}
+					if (!e.ctrlKey) {
+						win.close();
 					}
+				}
 				}
 			},
 			onmouseover: function(e) {
