@@ -241,15 +241,19 @@ test('Exclude internal elements', function() {
 	editor.getBody().innerHTML = (
 		'<span data-mce-bogus="1">\u200B</span>' +
 		'<span data-mce-bogus="1">\uFEFF</span>' +
-		'<div data-mce-bogus="1"></div>' +
+		'<div data-mce-bogus="all"></div>' +
+		'<div data-mce-bogus="all"><div><b>x</b></div></div>' +
+		'<img src="about:blank" data-mce-bogus="all">' +
+		'<br data-mce-bogus="1">' +
 		'test' +
 		'<img src="about:blank" />' +
 		'<table><tr><td>x</td></tr></table>'
 	);
 
 	editor.undoManager.add();
-	equal(count, 1);
+	equal(count, 2);
 	equal(Utils.cleanHtml(lastLevel.content),
+		'<br data-mce-bogus="1">' +
 		'test' +
 		'<img src="about:blank">' +
 		'<table><tbody><tr><td>x</td></tr></tbody></table>'
@@ -275,4 +279,41 @@ test('Undo added when typing and losing focus', function() {
 	editor.execCommand('FormatBlock', false, 'h1');
 	editor.undoManager.undo();
 	equal(editor.getContent(), "<p>some</p>");
+});
+
+test('BeforeAddUndo event', function() {
+	var lastEvt, addUndoEvt;
+
+	editor.on('BeforeAddUndo', function(e) {
+		lastEvt = e;
+	});
+
+	editor.undoManager.clear();
+	editor.setContent("<p>a</p>");
+	editor.undoManager.add();
+
+	equal(lastEvt.lastLevel, null);
+	equal(Utils.cleanHtml(lastEvt.level.content), "<p>a</p>");
+
+	editor.setContent("<p>b</p>");
+	editor.undoManager.add();
+
+	equal(Utils.cleanHtml(lastEvt.lastLevel.content), "<p>a</p>");
+	equal(Utils.cleanHtml(lastEvt.level.content), "<p>b</p>");
+
+	editor.on('BeforeAddUndo', function(e) {
+		e.preventDefault();
+	});
+
+	editor.on('AddUndo', function(e) {
+		addUndoEvt = e;
+	});
+
+	editor.setContent("<p>c</p>");
+	editor.undoManager.add(null, {data: 1});
+
+	equal(Utils.cleanHtml(lastEvt.lastLevel.content), "<p>b</p>");
+	equal(Utils.cleanHtml(lastEvt.level.content), "<p>c</p>");
+	equal(lastEvt.originalEvent.data, 1);
+	ok(!addUndoEvt, "Event level produced when it should be blocked");
 });

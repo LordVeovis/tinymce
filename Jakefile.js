@@ -12,7 +12,8 @@ var fs = require("fs");
 var eslint = require('./tools/BuildTools').eslint;
 var nuget = require('./tools/BuildTools').nuget;
 var phantomjs = require('./tools/BuildTools').phantomjs;
-var saucelabs = require('./tools/saucelabs').saucelabs;
+var jscs = require('./tools/BuildTools').jscs;
+var saucelabs = require('./tools/saucelabs/saucelabs').saucelabs;
 
 desc("Default build task");
 task("default", ["minify", "less"], function () {});
@@ -339,6 +340,15 @@ task("eslint-plugins", [], function() {
 	});
 });
 
+desc("Runs jscs on all source files");
+task("jscs", {async: true}, function() {
+	jscs({
+		src: 'js/tinymce',
+		configFile: '.jscsrc',
+		oncomplete: complete
+	});
+});
+
 desc("Runs JSHint on all source files");
 task("jshint", ["jshint-core", "jshint-plugins", "jshint-themes"], function () {});
 
@@ -444,7 +454,7 @@ task("mktmp", [], function() {
 });
 
 desc("Builds release packages as zip files");
-task("release", ["default", "nuget", "zip-production", "zip-production-jquery", "zip-development", "jshint", "eslint"]);
+task("release", ["default", "jshint", "eslint", "nuget", "zip-production", "zip-production-jquery", "zip-development", "zip-component"]);
 
 task("zip-production", ["mktmp"], function () {
 	var details = getReleaseDetails("changelog.txt");
@@ -551,6 +561,80 @@ task("zip-development", ["mktmp"], function () {
 	});
 });
 
+task("zip-component", ["mktmp"], function () {
+	var details = getReleaseDetails("changelog.txt");
+
+	function jsonToBuffer(json) {
+		return new Buffer(JSON.stringify(json, null, '\t'));
+	}
+
+	var keywords = ["editor", "wysiwyg", "tinymce", "richtext", "javascript", "html"];
+
+	zip({
+		exclude: [
+			"js/tinymce/plugins/visualblocks/img",
+			"js/tinymce/plugins/compat3x",
+			"js/tinymce/plugins/example",
+			"js/tinymce/plugins/example_dependency",
+			/(imagemanager|filemanager|moxiemanager)/,
+			/plugin\.dev\.js/,
+			/classes/,
+			/(.+\.less|\.dev\.svg|\.json|\.md)$/
+		],
+
+		from: [
+			["js/tinymce/skins", "skins"],
+			["js/tinymce/plugins", "plugins"],
+			["js/tinymce/themes", "themes"],
+			["js/tinymce/tinymce.js", "tinymce.js"],
+			["js/tinymce/tinymce.min.js", "tinymce.min.js"],
+			["js/tinymce/jquery.tinymce.min.js", "jquery.tinymce.min.js"],
+			["js/tinymce/tinymce.jquery.js", "tinymce.jquery.js"],
+			["js/tinymce/tinymce.jquery.min.js", "tinymce.jquery.min.js"],
+			["js/tinymce/license.txt", "license.txt"],
+			"changelog.txt",
+
+			// Bower meta
+			[jsonToBuffer({
+				"name": "tinymce",
+				"version": details.version,
+				"description": "Web based JavaScript HTML WYSIWYG editor control.",
+				"license": "http://www.tinymce.com/license",
+				"keywords": keywords,
+				"homepage": "http://www.tinymce.com",
+				"main": "tinymce.min.js",
+				"ignore": ["readme.md", "composer.json", "package.json"]
+			}), "bower.json"],
+
+			// Npm meta
+			[jsonToBuffer({
+				"name": "tinymce",
+				"version": details.version,
+				"description": "Web based JavaScript HTML WYSIWYG editor control.",
+				"license": "LGPL-2.1",
+				"keywords": keywords,
+				"bugs": {"url": "http://www.tinymce.com/develop/bugtracker.php"}
+			}), "package.json"],
+
+			// Composer meta
+			[jsonToBuffer({
+				"name": "tinymce/tinymce",
+				"version": details.version,
+				"description": "Web based JavaScript HTML WYSIWYG editor control.",
+				"license": ["LGPL-2.1"],
+				"keywords": keywords,
+				"homepage": "http://www.tinymce.com",
+				"type": "library",
+				"archive": {
+					"exclude": ["readme.md", "bower.js", "package.json"]
+				}
+			}), "composer.json"]
+		],
+
+		to: "tmp/tinymce_" + details.version + "_component.zip"
+	});
+});
+
 task("nuget", ["mktmp"], function () {
 	var details = getReleaseDetails("changelog.txt");
 
@@ -583,17 +667,16 @@ task("saucelabs-tests", [], function(pluginName) {
 		testname: 'TinyMCE QUnit Tests',
 		urls: ['http://127.0.0.1:9999/tests/index.html?min=true'],
 		browsers: [
-			{browserName: 'firefox', platform: 'XP'},
-			{browserName: 'googlechrome', platform: 'XP'},
+			{browserName: 'firefox', version: 'latest', platform: 'XP'},
+			{browserName: 'googlechrome', version: 'latest', platform: 'XP'},
 			{browserName: 'internet explorer', version: '8', platform: 'XP'},
 			{browserName: 'internet explorer', version: '9', platform: 'Windows 7'},
 			{browserName: 'internet explorer', version: '10', platform: 'Windows 7'},
 			{browserName: 'internet explorer', version: '11', platform: 'Windows 7'},
 			{browserName: 'safari', version: '7', platform: 'OS X 10.9'},
 			{browserName: "safari", version: "6", platform: "OS X 10.8"},
-			//{browserName: "ipad", version: "7", platform: "OS X 10.9"},
-			{browserName: 'firefox', platform: 'Linux'},
-			{browserName: 'googlechrome', platform: 'Linux'}
+			{browserName: 'firefox', platform: 'Linux', version: 'latest'},
+			{browserName: 'googlechrome', platform: 'Linux', version: 'latest'}
 		]
 	});
 });

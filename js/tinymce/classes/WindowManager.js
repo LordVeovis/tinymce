@@ -49,6 +49,14 @@ define("tinymce/WindowManager", [
 
 		self.windows = windows;
 
+		editor.on('remove', function() {
+			var i = windows.length;
+
+			while (i--) {
+				windows[i].close();
+			}
+		});
+
 		/**
 		 * Opens a new window.
 		 *
@@ -66,7 +74,7 @@ define("tinymce/WindowManager", [
 		self.open = function(args, params) {
 			var win;
 
-			editor.editorManager.activeEditor = editor;
+			editor.editorManager.setActive(editor);
 
 			args.title = args.title || ' ';
 
@@ -133,7 +141,7 @@ define("tinymce/WindowManager", [
 			// Takes a snapshot in the FocusManager of the selection before focus is lost to dialog
 			editor.nodeChanged();
 
-			return win.renderTo(document.body).reflow();
+			return win.renderTo().reflow();
 		};
 
 		/**
